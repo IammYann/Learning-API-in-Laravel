@@ -134,6 +134,17 @@
             color: #333;
             font-size: 1.5em;
         }
+        
+        .product-category {
+            background: #667eea;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.75em;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
 
         .product-item {
             background: #f9f9f9;
@@ -251,6 +262,13 @@
                         <input type="number" id="price" name="price" step="0.01" min="0" required>
                     </div>
 
+                    <div class="form-group">
+                        <label for="category_id">Category</label>
+                        <select id="category_id" name="category_id" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;">
+                            <option value="">-- Select Category --</option>
+                        </select>
+                    </div>
+
                     <button type="submit">Add Product</button>
                 </form>
             </div>
@@ -263,167 +281,129 @@
         </div>
     </div>
 
-    <script>
+        <script>
         const API_URL = 'http://127.0.0.1:8000/api/products';
+        const CATEGORIES_URL = 'http://127.0.0.1:8000/api/categories';
         const form = document.getElementById('productForm');
         const productsList = document.getElementById('productsList');
         const messageDiv = document.getElementById('message');
+        
+        let categories = [];
+        let isEditMode = false;
+        let editingId = null;
 
-        // Fetch and display products
+        // Load categories
+        async function loadCategories() {
+            try {
+                const response = await fetch(CATEGORIES_URL);
+                categories = await response.json();
+                const select = document.getElementById('category_id');
+                select.innerHTML = '<option value="">-- Select Category --</option>';
+                categories.forEach(cat => {
+                    const opt = document.createElement('option');
+                    opt.value = cat.id;
+                    opt.textContent = cat.name;
+                    select.appendChild(opt);
+                });
+            } catch (error) {
+                console.error('Error loading categories:', error);
+            }
+        }
+
+        function getCategoryName(id) {
+            const cat = categories.find(c => c.id == id);
+            return cat ? cat.name : 'Uncategorized';
+        }
+
+        // Load products
         async function loadProducts() {
             try {
                 const response = await fetch(API_URL);
                 const products = await response.json();
-
                 if (products.length === 0) {
-                    productsList.innerHTML = '<div class="empty-message">No products yet. Add one to get started!</div>';
+                    productsList.innerHTML = '<div class="empty-message">No products yet!</div>';
                     return;
                 }
-
-                productsList.innerHTML = products.map(product => `
+                productsList.innerHTML = products.map(p => `
                     <div class="product-item">
                         <div class="product-info">
-                            <div class="product-name">${product.name}</div>
-                            <div class="product-description">${product.description}</div>
-                            <div class="product-price">$${parseFloat(product.price).toFixed(2)}</div>
+                            <div class="product-name">${p.name}</div>
+                            ${p.category_id ? `<div class="product-category">${getCategoryName(p.category_id)}</div>` : ''}
+                            <div class="product-description">${p.description}</div>
+                            <div class="product-price">$${parseFloat(p.price).toFixed(2)}</div>
                         </div>
                         <div class="product-actions">
-                            <button class="edit-btn" onclick="editProduct(${product.id}, '${product.name}', '${product.description}', ${product.price})">Edit</button>
-                            <button class="delete-btn" onclick="deleteProduct(${product.id})">Delete</button>
+                            <button class="edit-btn" onclick="editProduct(${p.id}, '${p.name}', '${p.description}', ${p.price}, ${p.category_id || 0})">Edit</button>
+                            <button class="delete-btn" onclick="deleteProduct(${p.id})">Delete</button>
                         </div>
                     </div>
                 `).join('');
-            } catch (error) {
-                productsList.innerHTML = `<div class="error">Error loading products: ${error.message}</div>`;
+            } catch (e) {
+                productsList.innerHTML = `<div class="error">Error: ${e.message}</div>`;
             }
         }
 
-        // Add product
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-
             const data = {
                 name: document.getElementById('name').value,
                 description: document.getElementById('description').value,
                 price: parseFloat(document.getElementById('price').value)
             };
+            const catId = document.getElementById('category_id').value;
+            if (catId) data.category_id = catId;
 
             try {
-                let response;
-                if (isEditMode) {
-                    // UPDATE existing product
-                    response = await fetch(`${API_URL}/${editingId}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data)
-                    });
-                } else {
-                    // CREATE new product
-                    response = await fetch(API_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data)
-                    });
-                }
-
-                if (response.ok) {
-                    const message = isEditMode ? 'Product updated successfully!' : 'Product added successfully!';
-                    showMessage(message, 'success');
+                const method = isEditMode ? 'PUT' : 'POST';
+                const url = isEditMode ? `${API_URL}/${editingId}` : API_URL;
+                const res = await fetch(url, {
+                    method, 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (res.ok) {
+                    showMessage(isEditMode ? 'Updated!' : 'Added!', 'success');
                     form.reset();
                     isEditMode = false;
                     editingId = null;
                     form.querySelector('button').textContent = 'Add Product';
                     loadProducts();
-                } else {
-                    const errors = await response.json();
-                    showMessage(`Error: ${JSON.stringify(errors.errors)}`, 'error');
                 }
-            } catch (error) {
-                showMessage(`Error: ${error.message}`, 'error');
+            } catch (e) {
+                showMessage(`Error: ${e.message}`, 'error');
             }
         });
 
-        // Edit product
-        let isEditMode = false;
-        let editingId = null;
-
-        function editProduct(id, name, description, price) {
+        function editProduct(id, name, desc, price, catId) {
             isEditMode = true;
             editingId = id;
-
             document.getElementById('name').value = name;
-            document.getElementById('description').value = description;
+            document.getElementById('description').value = desc;
             document.getElementById('price').value = price;
-
-            // Change form to update mode
-            const submitBtn = form.querySelector('button');
-            const originalText = submitBtn.textContent;
-            submitBtn.textContent = 'Update Product';
-
-            form.onsubmit = async (e) => {
-                e.preventDefault();
-
-                const data = {
-                    name: document.getElementById('name').value,
-                    description: document.getElementById('description').value,
-                    price: parseFloat(document.getElementById('price').value)
-                };
-
-                try {
-                    const response = await fetch(`${API_URL}/${id}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(data)
-                    });
-
-                    if (response.ok) {
-                        showMessage('Product updated successfully!', 'success');
-                        form.reset();
-                        submitBtn.textContent = originalText;
-                        form.onsubmit = null;
-                        loadProducts();
-                    } else {
-                        showMessage('Error updating product', 'error');
-                    }
-                } catch (error) {
-                    showMessage(`Error: ${error.message}`, 'error');
-                }
-            };
-
+            document.getElementById('category_id').value = catId || '';
+            form.querySelector('button').textContent = 'Update Product';
             window.scrollTo(0, 0);
         }
 
-        // Delete product
         async function deleteProduct(id) {
-            if (!confirm('Are you sure you want to delete this product?')) return;
-
+            if (!confirm('Delete?')) return;
             try {
-                const response = await fetch(`${API_URL}/${id}`, {
-                    method: 'DELETE'
-                });
-
-                if (response.ok) {
-                    showMessage('Product deleted successfully!', 'success');
+                const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    showMessage('Deleted!', 'success');
                     loadProducts();
-                } else {
-                    showMessage('Error deleting product', 'error');
                 }
-            } catch (error) {
-                showMessage(`Error: ${error.message}`, 'error');
+            } catch (e) {
+                showMessage(`Error: ${e.message}`, 'error');
             }
         }
 
-        // Show message
         function showMessage(text, type) {
             messageDiv.innerHTML = `<div class="${type}">${text}</div>`;
-            setTimeout(() => {
-                messageDiv.innerHTML = '';
-            }, 3000);
+            setTimeout(() => messageDiv.innerHTML = '', 3000);
         }
 
-        // Load products on page load
+        loadCategories();
         loadProducts();
     </script>
 </body>

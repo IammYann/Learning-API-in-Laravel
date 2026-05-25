@@ -21,7 +21,8 @@ class ProductController extends Controller
         return Product::create($request->validate([
             'name' => 'required|string',
             'description' => 'required|string',
-            'price' => 'required|numeric| min=0',
+            'price' => 'required|numeric|min:0',
+            'category_id' => 'sometimes|exists:categories,id',  // ← Add this
         ]));
     }
 
@@ -32,6 +33,7 @@ class ProductController extends Controller
             'name' => 'sometimes|string',
             'description' => 'sometimes|string',
             'price' => 'sometimes|numeric|min:0',
+            'category_id' => 'sometimes|exists:categories,id',  // ← Add this
         ]));
         return $product;
     }
