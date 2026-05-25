@@ -180,6 +180,70 @@
             font-weight: 700;
         }
 
+        .product-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .product-tag {
+            background: #ff6b6b;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.7em;
+            font-weight: 600;
+        }
+
+        .tags-section {
+            margin: 15px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .tags-section label {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            font-weight: 400;
+        }
+
+        .tags-section input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+        }
+
+        .filter-section {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+
+        .filter-section label {
+            margin-bottom: 8px;
+        }
+
+        .filter-tag-btn {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border: none;
+            border-radius: 15px;
+            font-size: 0.85em;
+            cursor: pointer;
+            margin: 3px;
+            transition: background 0.3s;
+        }
+
+        .filter-tag-btn.active {
+            background: #ff6b6b;
+        }
+
         .product-actions {
             display: flex;
             gap: 10px;
@@ -269,6 +333,13 @@
                         </select>
                     </div>
 
+                    <div class="form-group">
+                        <label>Tags</label>
+                        <div class="tags-section" id="tagsSection">
+                            <p style="color: #999; text-align: center;">Loading tags...</p>
+                        </div>
+                    </div>
+
                     <button type="submit">Add Product</button>
                 </form>
             </div>
@@ -276,19 +347,28 @@
             <!-- Products List Section -->
             <div class="products-section">
                 <h2>Products List</h2>
+                <div class="filter-section" id="filterSection">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Filter by Tag:</label>
+                    <button class="filter-tag-btn active" onclick="filterByTag(null)">All</button>
+                    <div id="filterTagsContainer"></div>
+                </div>
                 <div id="productsList" class="loading">Loading products...</div>
             </div>
         </div>
     </div>
 
-        <script>
+    <script>
         const API_URL = 'http://127.0.0.1:8000/api/products';
         const CATEGORIES_URL = 'http://127.0.0.1:8000/api/categories';
+        const TAGS_URL = 'http://127.0.0.1:8000/api/tags';
         const form = document.getElementById('productForm');
         const productsList = document.getElementById('productsList');
         const messageDiv = document.getElementById('message');
         
         let categories = [];
+        let tags = [];
+        let allProducts = [];
+        let selectedTagFilter = null;
         let isEditMode = false;
         let editingId = null;
 
@@ -310,48 +390,122 @@
             }
         }
 
+        // Load tags
+        async function loadTags() {
+            try {
+                const response = await fetch(TAGS_URL);
+                tags = await response.json();
+                
+                // Populate tags checkboxes
+                const tagsSection = document.getElementById('tagsSection');
+                tagsSection.innerHTML = tags.map(tag => `
+                    <label>
+                        <input type="checkbox" name="tags" value="${tag.id}">
+                        ${tag.name}
+                    </label>
+                `).join('');
+
+                // Populate filter buttons
+                const filterContainer = document.getElementById('filterTagsContainer');
+                filterContainer.innerHTML = tags.map(tag => `
+                    <button class="filter-tag-btn" onclick="filterByTag(${tag.id})" data-tag="${tag.id}">
+                        ${tag.name}
+                    </button>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading tags:', error);
+            }
+        }
+
         function getCategoryName(id) {
             const cat = categories.find(c => c.id == id);
             return cat ? cat.name : 'Uncategorized';
+        }
+
+        function getTagName(id) {
+            const tag = tags.find(t => t.id == id);
+            return tag ? tag.name : 'Unknown';
         }
 
         // Load products
         async function loadProducts() {
             try {
                 const response = await fetch(API_URL);
-                const products = await response.json();
-                if (products.length === 0) {
-                    productsList.innerHTML = '<div class="empty-message">No products yet!</div>';
-                    return;
-                }
-                productsList.innerHTML = products.map(p => `
-                    <div class="product-item">
-                        <div class="product-info">
-                            <div class="product-name">${p.name}</div>
-                            ${p.category_id ? `<div class="product-category">${getCategoryName(p.category_id)}</div>` : ''}
-                            <div class="product-description">${p.description}</div>
-                            <div class="product-price">$${parseFloat(p.price).toFixed(2)}</div>
-                        </div>
-                        <div class="product-actions">
-                            <button class="edit-btn" onclick="editProduct(${p.id}, '${p.name}', '${p.description}', ${p.price}, ${p.category_id || 0})">Edit</button>
-                            <button class="delete-btn" onclick="deleteProduct(${p.id})">Delete</button>
-                        </div>
-                    </div>
-                `).join('');
+                allProducts = await response.json();
+                displayProducts(allProducts);
             } catch (e) {
                 productsList.innerHTML = `<div class="error">Error: ${e.message}</div>`;
             }
         }
 
+        // Display products with optional filter
+        function displayProducts(productsToShow) {
+            if (productsToShow.length === 0) {
+                productsList.innerHTML = '<div class="empty-message">No products found!</div>';
+                return;
+            }
+            
+            productsList.innerHTML = productsToShow.map(p => `
+                <div class="product-item">
+                    <div class="product-info">
+                        <div class="product-name">${p.name}</div>
+                        ${p.category_id ? `<div class="product-category">${getCategoryName(p.category_id)}</div>` : ''}
+                        ${p.tags && p.tags.length > 0 ? `
+                            <div class="product-tags">
+                                ${p.tags.map(tag => `<span class="product-tag">${tag.name}</span>`).join('')}
+                            </div>
+                        ` : ''}
+                        <div class="product-description">${p.description}</div>
+                        <div class="product-price">$${parseFloat(p.price).toFixed(2)}</div>
+                    </div>
+                    <div class="product-actions">
+                        <button class="edit-btn" onclick="editProduct(${p.id})">Edit</button>
+                        <button class="delete-btn" onclick="deleteProduct(${p.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Filter products by tag
+        function filterByTag(tagId) {
+            selectedTagFilter = tagId;
+            
+            // Update button styles
+            document.querySelectorAll('.filter-tag-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            if (tagId === null) {
+                document.querySelector('.filter-tag-btn[onclick="filterByTag(null)"]')?.classList.add('active');
+            } else {
+                document.querySelector(`.filter-tag-btn[data-tag="${tagId}"]`)?.classList.add('active');
+            }
+
+            // Filter and display
+            if (tagId === null) {
+                displayProducts(allProducts);
+            } else {
+                const filtered = allProducts.filter(p => 
+                    p.tags && p.tags.some(t => t.id == tagId)
+                );
+                displayProducts(filtered);
+            }
+        }
+
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            const selectedTags = Array.from(document.querySelectorAll('input[name="tags"]:checked'))
+                .map(cb => parseInt(cb.value));
+            
             const data = {
                 name: document.getElementById('name').value,
                 description: document.getElementById('description').value,
                 price: parseFloat(document.getElementById('price').value)
             };
+            
             const catId = document.getElementById('category_id').value;
             if (catId) data.category_id = catId;
+            if (selectedTags.length > 0) data.tags = selectedTags;
 
             try {
                 const method = isEditMode ? 'PUT' : 'POST';
@@ -367,6 +521,8 @@
                     isEditMode = false;
                     editingId = null;
                     form.querySelector('button').textContent = 'Add Product';
+                    // Clear tag checkboxes
+                    document.querySelectorAll('input[name="tags"]').forEach(cb => cb.checked = false);
                     loadProducts();
                 }
             } catch (e) {
@@ -374,19 +530,29 @@
             }
         });
 
-        function editProduct(id, name, desc, price, catId) {
+        function editProduct(id) {
+            const product = allProducts.find(p => p.id == id);
+            if (!product) return;
+
             isEditMode = true;
             editingId = id;
-            document.getElementById('name').value = name;
-            document.getElementById('description').value = desc;
-            document.getElementById('price').value = price;
-            document.getElementById('category_id').value = catId || '';
+            
+            document.getElementById('name').value = product.name;
+            document.getElementById('description').value = product.description;
+            document.getElementById('price').value = product.price;
+            document.getElementById('category_id').value = product.category_id || '';
+            
+            // Set tag checkboxes
+            document.querySelectorAll('input[name="tags"]').forEach(cb => {
+                cb.checked = product.tags && product.tags.some(t => t.id == cb.value);
+            });
+            
             form.querySelector('button').textContent = 'Update Product';
             window.scrollTo(0, 0);
         }
 
         async function deleteProduct(id) {
-            if (!confirm('Delete?')) return;
+            if (!confirm('Delete this product?')) return;
             try {
                 const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
                 if (res.ok) {
@@ -403,7 +569,9 @@
             setTimeout(() => messageDiv.innerHTML = '', 3000);
         }
 
+        // Initialize
         loadCategories();
+        loadTags();
         loadProducts();
     </script>
 </body>
