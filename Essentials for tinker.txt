@@ -1,0 +1,31 @@
+Adding
+
+Product (with Category and Tag):
+Product::create(['name' => 'Laptop', 'description' => 'High performance laptop', 'price' => 999.99, 'category_id' => 1])
+Product::tags()->attach([1, 2])
+Adding new Category
+Category::create(['name' => 'Electronics', 'description' => 'Electronic devices'])
+Adding new Tag
+Tag::create(['name' => 'New', 'description' => 'New products'])
+
+Update
+Product::find(2)->update(['name' => 'New Name', 'price' => 49.99])
+Category::find(2)->update(['name' => 'New Name', 'price' => 49.99])
+Tag::find(2)->update(['name' => 'New Name', 'price' => 49.99])
+
+Product::find(2)->update(['category_id'=>2]) // null for none
+Product::find(3)->tags()->attach([1,2])  //ATTACH only belongs to many to many relationship
+
+Deleting 
+
+Category 
+Category::find(1)->delete() \\ Category::destroy(1)
+Tag
+Tag::find(1)->delete() \\ Tag::destroy(1)
+
+Show()
+Product::pluck('name', 'id')
+Category::pluck('name', 'id')
+Tag::pluck('name', 'id')
+
+
