@@ -13,6 +13,8 @@
 
 - Learning Laravel Sanctum Package
 - Learnt About Tinker and How to Manipulate their Datas
+- Added essentials for tinker and learnt about how to manipulate data through tinker
+- Learnt about jobs and queues and implemented a emial notifier for products added and a pdf invoice of that product
 
 ## Things that I need to Learn
 
