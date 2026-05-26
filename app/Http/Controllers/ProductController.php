@@ -6,14 +6,14 @@ use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    // GET /api/products - Get all with tags
+    // GET /api/products - Get all with tags and category
     public function index() {
-        return Product::with('tags')->get();
+        return Product::with('tags', 'category')->get();
     }
 
     // GET /api/products/1 - Get one
     public function show($id) {
-        return Product::with('tags')->find($id);
+        return Product::with('tags', 'category')->find($id);
     }
 
     // POST /api/products - Create
@@ -34,7 +34,7 @@ class ProductController extends Controller
         if (!empty($tags)) {
             $product->tags()->attach($tags);
         }
-        return $product->load('tags');
+        return $product->load('tags', 'category');
     }
 
     // PUT /api/products/1 - Update
@@ -56,7 +56,7 @@ class ProductController extends Controller
         if ($tags !== null) {
             $product->tags()->sync($tags);
         }
-        return $product->load('tags');
+        return $product->load('tags', 'category');
     }
 
     // DELETE /api/products/1 - Delete

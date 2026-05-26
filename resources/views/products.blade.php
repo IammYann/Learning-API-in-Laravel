@@ -302,6 +302,18 @@
     </style>
 </head>
 <body>
+    <!-- User Profile Header -->
+    <div style="background: white; padding: 15px 0; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; justify-content: space-between; align-items: center;">
+            <div id="userProfile" style="display: none; font-weight: 600; color: #333;">
+                👤 <span id="profileName"></span>
+            </div>
+            <button id="logoutBtn" style="display: none; background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: 600;" onclick="logout()">
+                Logout
+            </button>
+        </div>
+    </div>
+
     <div class="container">
         <h1>📦 Product Manager</h1>
 
@@ -372,10 +384,71 @@
         let isEditMode = false;
         let editingId = null;
 
+        // === AUTH CHECK ===
+        function getAuthToken() {
+            return localStorage.getItem('auth_token');
+        }
+
+        function getAuthUser() {
+            const user = localStorage.getItem('auth_user');
+            return user ? JSON.parse(user) : null;
+        }
+
+        function showUserProfile() {
+            const user = getAuthUser();
+            if (user) {
+                document.getElementById('userProfile').style.display = 'block';
+                document.getElementById('profileName').textContent = user.name;
+                document.getElementById('logoutBtn').style.display = 'block';
+            }
+        }
+
+        async function logout() {
+            const token = getAuthToken();
+            try {
+                await fetch('http://127.0.0.1:8000/api/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+            
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('auth_user');
+            window.location.href = '/auth';
+        }
+
+        // Check auth on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            const token = getAuthToken();
+            if (!token) {
+                window.location.href = '/auth';
+                return;
+            }
+            showUserProfile();
+            loadInitialData();
+        });
+
+        function fetchWithAuth(url, options = {}) {
+            const token = getAuthToken();
+            const headers = {
+                'Content-Type': 'application/json',
+                ...(options.headers || {})
+            };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            return fetch(url, { ...options, headers });
+        }
+
         // Load categories
         async function loadCategories() {
             try {
-                const response = await fetch(CATEGORIES_URL);
+                const response = await fetchWithAuth(CATEGORIES_URL);
                 categories = await response.json();
                 const select = document.getElementById('category_id');
                 select.innerHTML = '<option value="">-- Select Category --</option>';
@@ -393,7 +466,7 @@
         // Load tags
         async function loadTags() {
             try {
-                const response = await fetch(TAGS_URL);
+                const response = await fetchWithAuth(TAGS_URL);
                 tags = await response.json();
                 
                 // Populate tags checkboxes
@@ -430,7 +503,7 @@
         // Load products
         async function loadProducts() {
             try {
-                const response = await fetch(API_URL);
+                const response = await fetchWithAuth(API_URL);
                 allProducts = await response.json();
                 displayProducts(allProducts);
             } catch (e) {
@@ -510,9 +583,8 @@
             try {
                 const method = isEditMode ? 'PUT' : 'POST';
                 const url = isEditMode ? `${API_URL}/${editingId}` : API_URL;
-                const res = await fetch(url, {
+                const res = await fetchWithAuth(url, {
                     method, 
-                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
                 if (res.ok) {
@@ -554,7 +626,7 @@
         async function deleteProduct(id) {
             if (!confirm('Delete this product?')) return;
             try {
-                const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                const res = await fetchWithAuth(`${API_URL}/${id}`, { method: 'DELETE' });
                 if (res.ok) {
                     showMessage('Deleted!', 'success');
                     loadProducts();
@@ -569,10 +641,11 @@
             setTimeout(() => messageDiv.innerHTML = '', 3000);
         }
 
-        // Initialize
-        loadCategories();
-        loadTags();
-        loadProducts();
+        function loadInitialData() {
+            loadCategories();
+            loadTags();
+            loadProducts();
+        }
     </script>
 </body>
 </html>
