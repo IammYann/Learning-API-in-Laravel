@@ -3,6 +3,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
+use App\Jobs\SendNotificationEmail;
+use App\Jobs\GenerateInvoicePDF;
 
 class ProductController extends Controller
 {
@@ -34,6 +36,12 @@ class ProductController extends Controller
         if (!empty($tags)) {
             $product->tags()->attach($tags);
         }
+        // Dispatch the email job
+        $userEmail = auth()->user() ? auth()->user()->email : 'admin@example.com'; // Assuming user is authenticated
+        SendNotificationEmail::dispatch($product, $userEmail);
+
+        GenerateInvoicePDF::dispatch($product);
+        
         return $product->load('tags', 'category');
     }
 
