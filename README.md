@@ -1,4 +1,4 @@
-##Day 1
+## Day 1
 
 - FrontEnd ra backend Connection ko lagi api
 - api routes
@@ -9,13 +9,14 @@
 - PHP Migration
 - One to Many Relationship
 
-##Day 2
+## Day 2
 
 - Learning Laravel Sanctum Package
 - Learnt About Tinker and How to Manipulate their Datas
 
-##Things that I need to Learn
+## Things that I need to Learn
 
 - JOB
 - redis
 - cache in/out
+
