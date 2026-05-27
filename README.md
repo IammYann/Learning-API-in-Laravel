@@ -22,7 +22,7 @@
 REST API structure (GET, POST, PUT, DELETE) (DONE Earlier)
 API authentication (very important) (DONE Earlier)
 Laravel Sanctum (must know) (DONE Earlier)
-API Resources (clean JSON formatting) 
+API Resources (clean JSON formatting)  (Done)
 Status codes (200, 201, 401, 404, 422)
 200-Done
 201-Added
