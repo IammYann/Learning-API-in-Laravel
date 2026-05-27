@@ -10,9 +10,9 @@ use App\Jobs\GenerateInvoicePDF;
 
 class ProductController extends Controller
 {
-    // GET /api/products - Get all with tags and category
+    // GET /api/products - Get all with tags and category (paginated)
     public function index() {
-        return ProductResource::collection(Product::with('tags', 'category')->get());
+        return ProductResource::collection(Product::with('tags', 'category')->paginate(5));
     }
 
     // GET /api/products/1 - Get one

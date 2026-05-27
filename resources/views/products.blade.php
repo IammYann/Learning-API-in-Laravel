@@ -365,6 +365,13 @@
                     <div id="filterTagsContainer"></div>
                 </div>
                 <div id="productsList" class="loading">Loading products...</div>
+                
+                <!-- Pagination Controls -->
+                <div id="paginationControls" style="display: none; text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
+                    <button onclick="previousPage()" style="background: #667eea; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; margin: 0 5px;">← Previous</button>
+                    <span id="pageIndicator" style="margin: 0 15px; font-weight: 600;"></span>
+                    <button onclick="nextPage()" style="background: #667eea; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; margin: 0 5px;">Next →</button>
+                </div>
             </div>
         </div>
     </div>
@@ -383,6 +390,12 @@
         let selectedTagFilter = null;
         let isEditMode = false;
         let editingId = null;
+        
+        // Pagination variables
+        let currentPage = 1;
+        let lastPage = 1;
+        let totalProducts = 0;
+        let paginationMeta = null;
 
         // === AUTH CHECK ===
         function getAuthToken() {
@@ -502,14 +515,59 @@
         }
 
         // Load products
-        async function loadProducts() {
+        async function loadProducts(page = 1) {
             try {
-                const response = await fetchWithAuth(API_URL);
+                const response = await fetchWithAuth(`${API_URL}?page=${page}`);
                 const data = await response.json();
-                allProducts = Array.isArray(data) ? data : data.data;                
+                
+                // Handle pagination response format
+                allProducts = Array.isArray(data) ? data : data.data;
+                paginationMeta = data.meta;
+                
+                if (paginationMeta) {
+                    currentPage = paginationMeta.current_page;
+                    lastPage = paginationMeta.last_page;
+                    totalProducts = paginationMeta.total;
+                    
+                    // Show/hide pagination controls
+                    const paginationDiv = document.getElementById('paginationControls');
+                    if (lastPage > 1) {
+                        paginationDiv.style.display = 'block';
+                        updatePaginationUI();
+                    } else {
+                        paginationDiv.style.display = 'none';
+                    }
+                }
+                
                 displayProducts(allProducts);
             } catch (e) {
                 productsList.innerHTML = `<div class="error">Error: ${e.message}</div>`;
+            }
+        }
+        
+        // Update pagination UI
+        function updatePaginationUI() {
+            const pageIndicator = document.getElementById('pageIndicator');
+            pageIndicator.textContent = `Page ${currentPage} of ${lastPage} (${totalProducts} total)`;
+            
+            // Disable/enable buttons based on current page
+            document.querySelector('button[onclick="previousPage()"]').disabled = currentPage === 1;
+            document.querySelector('button[onclick="nextPage()"]').disabled = currentPage === lastPage;
+        }
+        
+        // Navigate to next page
+        function nextPage() {
+            if (currentPage < lastPage) {
+                loadProducts(currentPage + 1);
+                window.scrollTo(0, 0);
+            }
+        }
+        
+        // Navigate to previous page
+        function previousPage() {
+            if (currentPage > 1) {
+                loadProducts(currentPage - 1);
+                window.scrollTo(0, 0);
             }
         }
 
@@ -544,6 +602,7 @@
         // Filter products by tag
         function filterByTag(tagId) {
             selectedTagFilter = tagId;
+            currentPage = 1; // Reset to first page when filtering
             
             // Update button styles
             document.querySelectorAll('.filter-tag-btn').forEach(btn => {
