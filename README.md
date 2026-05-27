@@ -40,12 +40,12 @@
 2. Eloquent Deep Understanding
    (Eager loading vs lazy loading (VERY IMPORTANT)) (🟢 C)
    Query optimization (avoid N+1 problem) 
-   Scopes (local/global scopes)
+   Scopes (local/global scopes) 🔴
 
-3. Authentication & Authorization
-   Sanctum authentication (API tokens)
-   Login / register flow
-   Middleware protection
+3. Authentication & Authorization 🔴 Need to fix this ASAP
+   Sanctum authentication (API tokens) 🔴
+   Login / register flow 🔴
+   Middleware protection 🔴
    Roles & permissions (basic level)
    admin vs user
 
