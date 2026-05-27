@@ -1,24 +1,26 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
     public function index() {
-        return Category::with('products')->get();
+        return CategoryResource::collection(Category::all());
     }
 
     public function show($id) {
-        return Category::with('products')->find($id);
+        return new CategoryResource(Category::find($id));
     }
 
     public function store(Request $request) {
-        return Category::create($request->validate([
+        $validate = $request->validate([
             'name' => 'required|string',
             'description' => 'required|string',
-        ]));
+        ]);
+        return new CategoryResource(Category::create($validate));
     }
 
     public function update(Request $request, $id) {
@@ -27,7 +29,7 @@ class CategoryController extends Controller
             'name' => 'sometimes|string',
             'description' => 'sometimes|string',
         ]));
-        return $category;
+        return new CategoryResource($category);
     }
 
     public function destroy($id) {

@@ -1,13 +1,14 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Http\Resources\TagResource;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 
 class TagController extends Controller
 {
     public function index() {
-        return Tag::all();
+        return TagResource::collection(Tag::all());
     }
 
     public function store(Request $request) {
@@ -15,12 +16,12 @@ class TagController extends Controller
             'name' => 'required|string|unique:tags',
             'description' => 'nullable|string',
         ]);
-        return Tag::create($validate);
+        return new TagResource(Tag::create($validate));
     }
 
     public function show($id)
     {
-        return Tag::findOrFail($id);
+        return new TagResource(Tag::findOrFail($id));
     }
 
     public function update(Request $request, $id)
@@ -32,7 +33,7 @@ class TagController extends Controller
         ]);
 
         $tag->update($validated);
-        return $tag;
+        return new TagResource($tag);
     }
 
     public function destroy($id)

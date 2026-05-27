@@ -18,6 +18,10 @@ Product::find(3)->tags()->attach([1,2])  //ATTACH only belongs to many to many r
 
 Deleting 
 
+Product()
+Product::destroy(1);  \\ Product::destroy([1, 2, 3]); 
+Product::truncate();  
+
 Category 
 Category::find(1)->delete() \\ Category::destroy(1)
 Tag

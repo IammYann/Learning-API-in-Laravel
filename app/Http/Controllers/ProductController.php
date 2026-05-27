@@ -1,6 +1,8 @@
 <?php
+
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Jobs\SendNotificationEmail;
@@ -10,12 +12,12 @@ class ProductController extends Controller
 {
     // GET /api/products - Get all with tags and category
     public function index() {
-        return Product::with('tags', 'category')->get();
+        return ProductResource::collection(Product::with('tags', 'category')->get());
     }
 
     // GET /api/products/1 - Get one
     public function show($id) {
-        return Product::with('tags', 'category')->find($id);
+        return new ProductResource(Product::with('tags', 'category')->find($id));
     }
 
     // POST /api/products - Create
@@ -38,11 +40,11 @@ class ProductController extends Controller
         }
         // Dispatch the email job
         $userEmail = auth()->user() ? auth()->user()->email : 'admin@example.com'; // Assuming user is authenticated
-        SendNotificationEmail::dispatch($product, $userEmail);
-
-        GenerateInvoicePDF::dispatch($product);
         
-        return $product->load('tags', 'category');
+        SendNotificationEmail::dispatch($product, $userEmail);
+        GenerateInvoicePDF::dispatch($product);
+
+        return new ProductResource($product->load('tags', 'category'));
     }
 
     // PUT /api/products/1 - Update
@@ -64,7 +66,8 @@ class ProductController extends Controller
         if ($tags !== null) {
             $product->tags()->sync($tags);
         }
-        return $product->load('tags', 'category');
+
+        return new ProductResource($product->load('tags', 'category'));
     }
 
     // DELETE /api/products/1 - Delete

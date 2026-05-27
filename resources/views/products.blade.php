@@ -449,7 +449,8 @@
         async function loadCategories() {
             try {
                 const response = await fetchWithAuth(CATEGORIES_URL);
-                categories = await response.json();
+                const CategoriesData = await response.json();
+                categories = Array.isArray(CategoriesData) ? CategoriesData : CategoriesData.data;
                 const select = document.getElementById('category_id');
                 select.innerHTML = '<option value="">-- Select Category --</option>';
                 categories.forEach(cat => {
@@ -467,8 +468,8 @@
         async function loadTags() {
             try {
                 const response = await fetchWithAuth(TAGS_URL);
-                tags = await response.json();
-                
+                const tagsData = await response.json();
+                tags = Array.isArray(tagsData) ? tagsData : tagsData.data;                
                 // Populate tags checkboxes
                 const tagsSection = document.getElementById('tagsSection');
                 tagsSection.innerHTML = tags.map(tag => `
@@ -504,7 +505,8 @@
         async function loadProducts() {
             try {
                 const response = await fetchWithAuth(API_URL);
-                allProducts = await response.json();
+                const data = await response.json();
+                allProducts = Array.isArray(data) ? data : data.data;                
                 displayProducts(allProducts);
             } catch (e) {
                 productsList.innerHTML = `<div class="error">Error: ${e.message}</div>`;

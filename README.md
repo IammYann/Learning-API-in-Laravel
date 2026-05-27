@@ -18,12 +18,17 @@
 
 ## Things that I need to Learn
 
-1. API Development (MOST IMPORTANT after queues)
-REST API structure (GET, POST, PUT, DELETE)
-API authentication (very important)
-Laravel Sanctum (must know)
-API Resources (clean JSON formatting)
+1. API Development (MOST IMPORTANT after queues) (DONE Earlier)
+REST API structure (GET, POST, PUT, DELETE) (DONE Earlier)
+API authentication (very important) (DONE Earlier)
+Laravel Sanctum (must know) (DONE Earlier)
+API Resources (clean JSON formatting) 
 Status codes (200, 201, 401, 404, 422)
+200-Done
+201-Added
+401-Error Unauthorized
+404-NotFound
+422-Server error/ Validation Error
 Pagination
 
 2. Eloquent Deep Understanding
