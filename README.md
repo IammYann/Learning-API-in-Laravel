@@ -27,6 +27,7 @@
 - Learnt about Login / register flow | Middleware protection | Roles & permissions (basic level) | admin vs user
 - Learnt about seeding and filling database with fake data
 - Implemented a caching based to load datas from DB faster
+- Learnt and Implemented Redis into my code
 
 ## Things that I need to Learn
 
