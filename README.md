@@ -22,6 +22,10 @@
 - Learning about Pagination
 - Learnt about Eager loading vs lazy loading
 
+## Day 4
+
+- Leant about Login / register flow | Middleware protection | Roles & permissions (basic level) | admin vs user
+
 ## Things that I need to Learn
 
 1. API Development (MOST IMPORTANT after queues) (DONE Earlier) 🟢
@@ -42,10 +46,10 @@
    Query optimization (avoid N+1 problem) 
    Scopes (local/global scopes) 🔴
 
-3. Authentication & Authorization 🔴 Need to fix this ASAP
-   Sanctum authentication (API tokens) 🔴
-   Login / register flow 🔴
-   Middleware protection 🔴
+3. Authentication & Authorization Need to fix this ASAP
+   Sanctum authentication (API tokens) 
+   Login / register flow 
+   Middleware protection 
    Roles & permissions (basic level)
    admin vs user
 
