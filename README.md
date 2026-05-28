@@ -24,7 +24,9 @@
 
 ## Day 4
 
-- Leant about Login / register flow | Middleware protection | Roles & permissions (basic level) | admin vs user
+- Learnt about Login / register flow | Middleware protection | Roles & permissions (basic level) | admin vs user
+- Learnt about seeding and filling database with fake data
+
 
 ## Things that I need to Learn
 
@@ -46,12 +48,12 @@
    Query optimization (avoid N+1 problem) 
    Scopes (local/global scopes) 🔴
 
-3. Authentication & Authorization Need to fix this ASAP
-   Sanctum authentication (API tokens) 
-   Login / register flow 
-   Middleware protection 
-   Roles & permissions (basic level)
-   admin vs user
+3. Authentication & Authorization Need to fix this ASAP 🟢
+   Sanctum authentication (API tokens) 🟢
+   Login / register flow 🟢
+   Middleware protection 🟢
+   Roles & permissions (basic level) 🟢
+   admin vs user 🟢
 
 4. Caching (NEXT BIG STEP AFTER QUEUES)
    Redis or file cache

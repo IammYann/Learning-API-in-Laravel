@@ -7,17 +7,45 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Jobs\SendNotificationEmail;
 use App\Jobs\GenerateInvoicePDF;
+use Illuminate\Support\Facades\Cache;
 
 class ProductController extends Controller
 {
+    const PRODUCTS_CACHE_TTL = 3600; // Cache duration in seconds (1 hour)
+    
     // GET /api/products - Get all with tags and category (paginated)
-    public function index() {
-        return ProductResource::collection(Product::with('tags', 'category')->paginate(5));
+    public function index(Request $request) {
+        $page = $request->get('page', 1);
+        $cacheKey = "products_page_{$page}";
+        
+        // Cache each page separately for 1 hour
+        return Cache::remember(
+            $cacheKey,
+            self::PRODUCTS_CACHE_TTL,
+            function () {
+                return ProductResource::collection(
+                    Product::with('tags', 'category')->paginate(15)
+                );
+            }
+        );
     }
 
     // GET /api/products/1 - Get one
     public function show($id) {
-        return new ProductResource(Product::with('tags', 'category')->find($id));
+        // Cache individual products for 1 hour
+        $product = Cache::remember(
+            "product_{$id}",
+            self::PRODUCTS_CACHE_TTL,
+            function () use ($id) {
+                return Product::with('tags', 'category')->find($id);
+            }
+        );
+        
+        if (!$product) {
+            return response()->json(['message' => 'Product not found'], 404);
+        }
+        
+        return new ProductResource($product);
     }
 
     // POST /api/products - Create
@@ -38,6 +66,10 @@ class ProductController extends Controller
         if (!empty($tags)) {
             $product->tags()->attach($tags);
         }
+
+        // Clear all product caches when new product is created
+        Cache::tags(['products'])->flush();
+
         // Dispatch the email job
         $userEmail = auth()->user() ? auth()->user()->email : 'admin@example.com'; // Assuming user is authenticated
         
@@ -75,6 +107,10 @@ class ProductController extends Controller
             $product->tags()->sync($tags);
         }
 
+        // Clear all product-related caches
+        Cache::forget("product_{$id}");
+        Cache::tags(['products'])->flush(); // Clears all product pages
+
         return new ProductResource($product->load('tags', 'category'));
     }
 
@@ -91,6 +127,10 @@ class ProductController extends Controller
         }
 
         $product->delete();
+
+        // Clear all product-related caches when product is deleted
+        Cache::tags(['products'])->flush();
+
         return response()->json(null, 204);
     }
 }
