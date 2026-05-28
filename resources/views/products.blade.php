@@ -462,6 +462,10 @@
         async function loadCategories() {
             try {
                 const response = await fetchWithAuth(CATEGORIES_URL);
+                if (!response.ok) {
+                    console.error('Categories API error:', response.status);
+                    return;
+                }
                 const CategoriesData = await response.json();
                 categories = Array.isArray(CategoriesData) ? CategoriesData : CategoriesData.data;
                 const select = document.getElementById('category_id');
@@ -648,6 +652,9 @@
                     method, 
                     body: JSON.stringify(data)
                 });
+                
+                const responseData = await res.json();
+                
                 if (res.ok) {
                     showMessage(isEditMode ? 'Updated!' : 'Added!', 'success');
                     form.reset();
@@ -657,6 +664,8 @@
                     // Clear tag checkboxes
                     document.querySelectorAll('input[name="tags"]').forEach(cb => cb.checked = false);
                     loadProducts();
+                } else {
+                    showMessage(`Error: ${responseData.message || 'Something went wrong'}`, 'error');
                 }
             } catch (e) {
                 showMessage(`Error: ${e.message}`, 'error');

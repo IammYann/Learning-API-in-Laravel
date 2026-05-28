@@ -49,7 +49,10 @@ class ProductController extends Controller
 
     // PUT /api/products/1 - Update
     public function update(Request $request, $id) {
-        $product = Product::find($id);
+        if (!$request->user() || !$request->user()->isAdmin()) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
         $validated = $request->validate([
             'name' => 'sometimes|string',
             'description' => 'sometimes|string',
@@ -62,6 +65,11 @@ class ProductController extends Controller
         $tags = $validated['tags'] ?? null;
         unset($validated['tags']);
 
+        $product = Product::find($id);
+        if (!$product) {
+            return response()->json(['message' => 'Product not found'], 404);
+        }
+
         $product->update($validated);
         if ($tags !== null) {
             $product->tags()->sync($tags);
@@ -71,8 +79,18 @@ class ProductController extends Controller
     }
 
     // DELETE /api/products/1 - Delete
-    public function destroy($id) {
-        Product::destroy($id);
-        return response()->noContent();
+    public function destroy(Request $request, $id) {
+        // Only admin can delete
+        if (!$request->user() || !$request->user()->isAdmin()) {
+            return response()->json(['message' => 'Only admins can delete products'], 403);
+        }
+
+        $product = Product::find($id);
+        if (!$product) {
+            return response()->json(['message' => 'Product not found'], 404);
+        }
+
+        $product->delete();
+        return response()->json(null, 204);
     }
 }

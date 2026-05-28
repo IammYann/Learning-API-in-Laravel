@@ -25,6 +25,9 @@ class CategoryController extends Controller
 
     public function update(Request $request, $id) {
         $category = Category::find($id);
+        if (!$category) {
+            return response()->json(['message' => 'Category not found'], 404);
+        }
         $category->update($request->validate([
             'name' => 'sometimes|string',
             'description' => 'sometimes|string',
@@ -33,7 +36,11 @@ class CategoryController extends Controller
     }
 
     public function destroy($id) {
-        Category::destroy($id);
+        $category = Category::find($id);
+        if (!$category) {
+            return response()->json(['message' => 'Category not found'], 404);
+        }
+        $category->delete();
         return response()->noContent();
     }
 }
