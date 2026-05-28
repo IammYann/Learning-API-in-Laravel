@@ -11,14 +11,12 @@ use Illuminate\Support\Facades\Cache;
 
 class ProductController extends Controller
 {
-    const PRODUCTS_CACHE_TTL = 3600; // Cache duration in seconds (1 hour)
+    const PRODUCTS_CACHE_TTL = 3600; 
     
-    // GET /api/products - Get all with tags and category (paginated)
     public function index(Request $request) {
         $page = $request->get('page', 1);
         $cacheKey = "products_page_{$page}";
         
-        // Cache each page separately for 1 hour
         return Cache::remember(
             $cacheKey,
             self::PRODUCTS_CACHE_TTL,
@@ -30,9 +28,7 @@ class ProductController extends Controller
         );
     }
 
-    // GET /api/products/1 - Get one
     public function show($id) {
-        // Cache individual products for 1 hour
         $product = Cache::remember(
             "product_{$id}",
             self::PRODUCTS_CACHE_TTL,
