@@ -282,6 +282,9 @@
 
         // Display products with optional filter
         function displayProducts(productsToShow) {
+            // Remove loading class to show products
+            productsList.classList.remove('loading');
+            
             if (productsToShow.length === 0) {
                 productsList.innerHTML = '<div class="empty-message">No products found!</div>';
                 return;

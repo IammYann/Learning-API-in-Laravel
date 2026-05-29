@@ -5,8 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use App\Jobs\SendNotificationEmail;
-use App\Jobs\GenerateInvoicePDF;
+use App\Events\ProductCreated;
+use App\Events\ProductUpdated;
+use App\Events\ProductDeleted;
 use Illuminate\Support\Facades\Cache;
 
 class ProductController extends Controller
@@ -17,7 +18,7 @@ class ProductController extends Controller
         $page = $request->get('page', 1);
         $cacheKey = "products_page_{$page}";
         
-        return Cache::remember(
+        return Cache::tags(['products'])->remember(
             $cacheKey,
             self::PRODUCTS_CACHE_TTL,
             function () {
@@ -29,7 +30,7 @@ class ProductController extends Controller
     }
 
     public function show($id) {
-        $product = Cache::remember(
+        $product = Cache::tags(['products'])->remember(
             "product_{$id}",
             self::PRODUCTS_CACHE_TTL,
             function () use ($id) {
@@ -63,14 +64,9 @@ class ProductController extends Controller
             $product->tags()->attach($tags);
         }
 
-        // Clear all product caches when new product is created
-        Cache::tags(['products'])->flush();
-
-        // Dispatch the email job
-        $userEmail = auth()->user() ? auth()->user()->email : 'admin@example.com'; // Assuming user is authenticated
-        
-        SendNotificationEmail::dispatch($product, $userEmail);
-        GenerateInvoicePDF::dispatch($product);
+        // Cache is automatically cleared by ProductObserver on create
+        // Dispatch the ProductCreated event - listeners will handle the rest
+        ProductCreated::dispatch($product->load('tags', 'category'));
 
         return new ProductResource($product->load('tags', 'category'));
     }
@@ -103,9 +99,9 @@ class ProductController extends Controller
             $product->tags()->sync($tags);
         }
 
-        // Clear all product-related caches
-        Cache::forget("product_{$id}");
-        Cache::tags(['products'])->flush(); // Clears all product pages
+        // Cache is automatically cleared by ProductObserver on update
+        // Dispatch the ProductUpdated event
+        ProductUpdated::dispatch($product->load('tags', 'category'));
 
         return new ProductResource($product->load('tags', 'category'));
     }
@@ -124,8 +120,9 @@ class ProductController extends Controller
 
         $product->delete();
 
-        // Clear all product-related caches when product is deleted
-        Cache::tags(['products'])->flush();
+        // Cache is automatically cleared by ProductObserver on delete
+        // Dispatch the ProductDeleted event
+        ProductDeleted::dispatch($product);
 
         return response()->json(null, 204);
     }
