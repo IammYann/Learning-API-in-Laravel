@@ -29,6 +29,11 @@
 - Implemented a caching based to load datas from DB faster
 - Learnt and Implemented Redis into my code
 
+## Day 5
+- Learn about when I turncate my table when the cache is activated, Cache stores the empty result, Cache wasn't fully cleared, new products were added, but old empty cache is still being returned 
+- Put in a observer to my code so everytime I add, update or remove any products, the cache gets cleared too
+
+
 ## Things that I need to Learn
 
 1. API Development (MOST IMPORTANT after queues) (DONE Earlier) 🟢
