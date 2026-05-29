@@ -4,262 +4,79 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Auth - Product Manager</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 400px;
-            width: 100%;
-        }
-
-        .card {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            padding: 40px;
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-            color: #333;
-            font-size: 2em;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #555;
-            font-weight: 600;
-        }
-
-        input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-            font-family: inherit;
-            transition: border-color 0.3s;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        button:hover {
-            background: #5568d3;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #eee;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 12px;
-            background: none;
-            border: none;
-            border-bottom: 3px solid transparent;
-            color: #999;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .tab-btn.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .message {
-            padding: 12px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            text-align: center;
-            font-weight: 600;
-        }
-
-        .success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .loading {
-            display: none;
-            text-align: center;
-            color: #667eea;
-        }
-
-        .user-info {
-            background: #f9f9f9;
-            padding: 20px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            display: none;
-            text-align: center;
-        }
-
-        .user-info h3 {
-            color: #667eea;
-            margin-bottom: 10px;
-        }
-
-        .user-info p {
-            color: #666;
-            margin: 5px 0;
-        }
-
-        .logout-btn {
-            background: #dc3545;
-            margin-top: 20px;
-        }
-
-        .logout-btn:hover {
-            background: #c82333;
-        }
-
-        .link {
-            text-align: center;
-            margin-top: 15px;
-            color: #666;
-        }
-
-        .link a {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .link a:hover {
-            text-decoration: underline;
-        }
-
-        @media (max-width: 480px) {
-            .card {
-                padding: 25px;
-            }
-
-            h1 {
-                font-size: 1.5em;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="/css/modern.css">
 </head>
 <body>
-    <div class="container">
-        <div class="card">
-            <h1>🔐 Auth</h1>
+    <!-- Background glows -->
+    <div class="bg-glow-container">
+        <div class="glow-blob glow-blob-1"></div>
+        <div class="glow-blob glow-blob-2"></div>
+        <div class="glow-blob glow-blob-3"></div>
+    </div>
 
-            <div id="loggedOutView">
-                <div class="tabs">
-                    <button class="tab-btn active" onclick="switchTab('login')">Login</button>
-                    <button class="tab-btn" onclick="switchTab('register')">Register</button>
+    <div class="auth-wrapper">
+        <div class="auth-container">
+            <div class="glass-card">
+                <h1 style="left: 0; transform: none; font-size: 2.25rem; font-weight: 800; margin-bottom: 30px;">🔐 Auth</h1>
+
+                <div id="loggedOutView">
+                    <div class="auth-tabs">
+                        <button class="auth-tab-btn tab-btn active" onclick="switchTab('login')">Login</button>
+                        <button class="auth-tab-btn tab-btn" onclick="switchTab('register')">Register</button>
+                    </div>
+
+                    <!-- Login Tab -->
+                    <div id="login" class="auth-tab-content tab-content active">
+                        <div id="loginMessage"></div>
+                        <form id="loginForm">
+                            <div class="form-group">
+                                <label for="loginEmail">Email</label>
+                                <input type="email" id="loginEmail" required placeholder="name@domain.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="loginPassword">Password</label>
+                                <input type="password" id="loginPassword" required placeholder="••••••••">
+                            </div>
+                            <button type="submit">Login</button>
+                        </form>
+                    </div>
+
+                    <!-- Register Tab -->
+                    <div id="register" class="auth-tab-content tab-content">
+                        <div id="registerMessage"></div>
+                        <form id="registerForm">
+                            <div class="form-group">
+                                <label for="registerName">Name</label>
+                                <input type="text" id="registerName" required placeholder="John Doe">
+                            </div>
+                            <div class="form-group">
+                                <label for="registerEmail">Email</label>
+                                <input type="email" id="registerEmail" required placeholder="name@domain.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="registerPassword">Password</label>
+                                <input type="password" id="registerPassword" required placeholder="••••••••">
+                            </div>
+                            <button type="submit">Register</button>
+                        </form>
+                    </div>
                 </div>
 
-                <!-- Login Tab -->
-                <div id="login" class="tab-content active">
-                    <div id="loginMessage"></div>
-                    <form id="loginForm">
-                        <div class="form-group">
-                            <label for="loginEmail">Email</label>
-                            <input type="email" id="loginEmail" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="loginPassword">Password</label>
-                            <input type="password" id="loginPassword" required>
-                        </div>
-                        <button type="submit">Login</button>
-                    </form>
+                <!-- Logged In View -->
+                <div id="loggedInView" class="auth-logged-in-view" style="display: none;">
+                    <div class="auth-user-card">
+                        <h3>👋 Welcome back!</h3>
+                        <p id="userName" style="font-weight: 600; margin-bottom: 6px; color: var(--text-primary);"></p>
+                        <p id="userEmail" style="color: var(--text-secondary);"></p>
+                    </div>
+                    <p style="text-align: center; color: var(--text-secondary); margin-bottom: 24px; font-size: 0.95rem;">
+                        ✅ You are authenticated! Your secure token is stored.
+                    </p>
+                    <a href="/products" class="btn btn-primary" style="text-decoration: none; margin-bottom: 12px;">
+                        Go to Dashboard →
+                    </a>
+                    <button class="delete-btn" style="width: 100%; border-radius: 12px; padding: 12px;" onclick="logout()">Logout</button>
                 </div>
-
-                <!-- Register Tab -->
-                <div id="register" class="tab-content">
-                    <div id="registerMessage"></div>
-                    <form id="registerForm">
-                        <div class="form-group">
-                            <label for="registerName">Name</label>
-                            <input type="text" id="registerName" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="registerEmail">Email</label>
-                            <input type="email" id="registerEmail" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="registerPassword">Password</label>
-                            <input type="password" id="registerPassword" required>
-                        </div>
-                        <button type="submit">Register</button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Logged In View -->
-            <div id="loggedInView" style="display: none;">
-                <div class="user-info">
-                    <h3>Welcome!</h3>
-                    <p id="userEmail"></p>
-                    <p id="userName"></p>
-                </div>
-                <p style="text-align: center; color: #666; margin-bottom: 20px;">
-                    ✅ You are authenticated! Your token is stored.
-                </p>
-                <a href="/products" style="display: inline-block; width: 100%; padding: 12px; background: #667eea; color: white; text-align: center; border-radius: 5px; text-decoration: none; font-weight: 600; margin-bottom: 10px;">
-                    Go to Products
-                </a>
-                <button class="logout-btn" onclick="logout()">Logout</button>
             </div>
         </div>
     </div>

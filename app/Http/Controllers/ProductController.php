@@ -62,6 +62,7 @@ class ProductController extends Controller
         $product = Product::create($validated);
         if (!empty($tags)) {
             $product->tags()->attach($tags);
+            Cache::tags(['products'])->flush();
         }
 
         // Cache is automatically cleared by ProductObserver on create
@@ -97,6 +98,7 @@ class ProductController extends Controller
         $product->update($validated);
         if ($tags !== null) {
             $product->tags()->sync($tags);
+            Cache::tags(['products'])->flush();
         }
 
         // Cache is automatically cleared by ProductObserver on update

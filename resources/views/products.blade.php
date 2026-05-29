@@ -4,16 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Manager</title>
-    
+    <link rel="stylesheet" href="/css/modern.css">
 </head>
 <body>
+    <!-- Background glows -->
+    <div class="bg-glow-container">
+        <div class="glow-blob glow-blob-1"></div>
+        <div class="glow-blob glow-blob-2"></div>
+        <div class="glow-blob glow-blob-3"></div>
+    </div>
+
     <!-- User Profile Header -->
-    <div style="background: white; padding: 15px 0; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-        <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; justify-content: space-between; align-items: center;">
-            <div id="userProfile" style="display: none; font-weight: 600; color: #333;">
+    <div class="profile-header">
+        <div class="profile-container">
+            <div id="userProfile" class="profile-info" style="display: none;">
                 👤 <span id="profileName"></span>
             </div>
-            <button id="logoutBtn" style="display: none; background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: 600;" onclick="logout()">
+            <button id="logoutBtn" class="logout-btn-header" style="display: none;" onclick="logout()">
                 Logout
             </button>
         </div>
@@ -24,28 +31,28 @@
 
         <div class="content">
             <!-- Form Section -->
-            <div class="form-section">
-                <h2>Add Product</h2>
+            <div class="form-section glass-card">
+                <h2>✨ Add Product</h2>
                 <div id="message"></div>
                 <form id="productForm">
                     <div class="form-group">
                         <label for="name">Product Name *</label>
-                        <input type="text" id="name" name="name" required>
+                        <input type="text" id="name" name="name" required placeholder="Enter product name">
                     </div>
 
                     <div class="form-group">
                         <label for="description">Description *</label>
-                        <textarea id="description" name="description" required></textarea>
+                        <textarea id="description" name="description" required placeholder="Write product description..."></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label for="price">Price *</label>
-                        <input type="number" id="price" name="price" step="0.01" min="0" required>
+                        <label for="price">Price ($) *</label>
+                        <input type="number" id="price" name="price" step="0.01" min="0" required placeholder="0.00">
                     </div>
 
                     <div class="form-group">
                         <label for="category_id">Category</label>
-                        <select id="category_id" name="category_id" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;">
+                        <select id="category_id" name="category_id">
                             <option value="">-- Select Category --</option>
                         </select>
                     </div>
@@ -53,7 +60,7 @@
                     <div class="form-group">
                         <label>Tags</label>
                         <div class="tags-section" id="tagsSection">
-                            <p style="color: #999; text-align: center;">Loading tags...</p>
+                            <p style="color: var(--text-muted); text-align: center; width: 100%;">Loading tags...</p>
                         </div>
                     </div>
 
@@ -62,20 +69,22 @@
             </div>
 
             <!-- Products List Section -->
-            <div class="products-section">
-                <h2>Products List</h2>
+            <div class="products-section glass-card">
+                <h2>📦 Products List</h2>
                 <div class="filter-section" id="filterSection">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Filter by Tag:</label>
-                    <button class="filter-tag-btn active" onclick="filterByTag(null)">All</button>
-                    <div id="filterTagsContainer"></div>
+                    <label style="color: var(--text-secondary); font-size: 0.875rem; font-weight: 600; margin-bottom: 8px; display: block;">Filter by Tag:</label>
+                    <div class="filter-tags-grid">
+                        <button class="filter-tag-btn active" onclick="filterByTag(null)">All</button>
+                        <div id="filterTagsContainer" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
+                    </div>
                 </div>
                 <div id="productsList" class="loading">Loading products...</div>
                 
                 <!-- Pagination Controls -->
-                <div id="paginationControls" style="display: none; text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
-                    <button onclick="previousPage()" style="background: #667eea; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; margin: 0 5px;">← Previous</button>
-                    <span id="pageIndicator" style="margin: 0 15px; font-weight: 600;"></span>
-                    <button onclick="nextPage()" style="background: #667eea; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; margin: 0 5px;">Next →</button>
+                <div id="paginationControls" class="pagination-container" style="display: none;">
+                    <button class="pagination-btn" onclick="previousPage()">← Previous</button>
+                    <span id="pageIndicator" class="page-indicator"></span>
+                    <button class="pagination-btn" onclick="nextPage()">Next →</button>
                 </div>
             </div>
         </div>
